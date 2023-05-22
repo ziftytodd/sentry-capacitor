@@ -4,14 +4,23 @@
 
 ### Fixes
 
+- Fix Deprecated references to Sdk Info ([#376](https://github.com/getsentry/sentry-capacitor/pull/376))
+- Fix iOS not Sending events ([#370](https://github.com/getsentry/sentry-capacitor/pull/370))
+- Support for Capacitor 5 ([#356](https://github.com/getsentry/sentry-capacitor/pull/356))
+
+## 0.11.3
+
+### Fixes
+
+- Use prepack instead of prepublishonly ([#363](https://github.com/getsentry/sentry-capacitor/pull/363))
 - Fix Sentry not initialising when tracesSampler is used ([#352](https://github.com/getsentry/sentry-capacitor/pull/352))
 - Fix CSP Errors on Replay when using ([#333](https://github.com/getsentry/sentry-capacitor/pull/333))
 
 ### Dependencies
 
-- Bump Sentry JavaScript SDK to `7.42.0` ([#333](https://github.com/getsentry/sentry-capacitor/pull/333))
-  - [changelog](https://github.com/getsentry/sentry-javascript/releases/tag/7.42.0)
-  - [diff](https://github.com/getsentry/sentry-javascript/compare/7.25.0...7.42.0)
+- Bump Sentry JavaScript SDK to `7.50.0` ([#362](https://github.com/getsentry/sentry-capacitor/pull/362))
+  - [changelog](https://github.com/getsentry/sentry-javascript/releases/tag/7.50.0)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/7.25.0...7.50.0)
 
 ## 0.11.2
 

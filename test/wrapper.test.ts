@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import type { Envelope, EventEnvelope, EventItem, SeverityLevel } from '@sentry/types';
+import type { Envelope, EventEnvelope, EventItem, SeverityLevel, TransportMakeRequestResponse } from '@sentry/types';
 import { createEnvelope, logger } from '@sentry/utils';
 
 import { utf8ToBytes } from '../src/vendor';
@@ -7,7 +7,7 @@ import { NATIVE } from '../src/wrapper';
 
 let getStringBytesLengthValue = 1;
 
-function NumberArrayToString(numberArray: number[]): string{
+function NumberArrayToString(numberArray: number[]): string {
   return new TextDecoder().decode(new Uint8Array(numberArray).buffer);
 }
 
@@ -87,7 +87,7 @@ describe('Tests Native Wrapper', () => {
       expect(SentryCapacitor.initNativeSdk).toBeCalled();
     });
 
-    test('Vue options to be removed', async () => {
+    test('Vue and App options to be removed', async () => {
 
       const initNativeSdk = jest.spyOn(SentryCapacitor, 'initNativeSdk');
 
@@ -100,6 +100,36 @@ describe('Tests Native Wrapper', () => {
       expect(nativeOption.app).toBeUndefined();
       // @ts-ignore Not part of Capacitor Options but it is extended by Vue Options.
       expect(nativeOption.vue).toBeUndefined();
+
+      expect(initNativeSdk).toBeCalled();
+    });
+
+
+    test('default options to be removed', async () => {
+      const initNativeSdk = jest.spyOn(SentryCapacitor, 'initNativeSdk');
+      await NATIVE.initNativeSdk(
+        {
+          dsn: 'test',
+          enableNative: true,
+          integrations: [],
+          defaultIntegrations: [],
+          beforeSend: ((event) => event),
+          beforeBreadcrumb: ((breadcrumb) => breadcrumb),
+          beforeSendTransaction: (transaction) => transaction,
+          transport: jest.fn(),
+          tracesSampler: jest.fn(),
+        });
+
+      const nativeOption = initNativeSdk.mock.calls[0][0].options;
+      expect(SentryCapacitor.initNativeSdk).toBeCalledTimes(1);
+      // @ts-ignore Not part of Capacitor Options but it is extended by Vue Options.
+      expect(nativeOption.integrations).toBeUndefined();
+      expect(nativeOption.defaultIntegrations).toBeUndefined();
+      expect(nativeOption.beforeSend).toBeUndefined();
+      expect(nativeOption.beforeSendTransaction).toBeUndefined();
+      expect(nativeOption.beforeBreadcrumb).toBeUndefined();
+      expect(nativeOption.transport).toBeUndefined();
+      expect(nativeOption.tracesSampler).toBeUndefined();
 
       expect(initNativeSdk).toBeCalled();
     });
@@ -357,6 +387,56 @@ describe('Tests Native Wrapper', () => {
       expect(NumberArrayToString(captureEnvelopeSpy.mock.calls[0][0].envelope)).toMatch(
         `${expectedHeader}\n${expectedItem}\n${expectedPayload}\n`);
     });
+
+    test('has statusCode 200 on success', async () => {
+      const captureEnvelopeSpy = jest.spyOn(SentryCapacitor, 'captureEnvelope');
+      captureEnvelopeSpy.mockResolvedValue(true);
+
+      const event = {
+        event_id: 'event0',
+        message: 'test',
+        sdk: {
+          name: 'test-sdk-name',
+          version: '2.1.3',
+        },
+      };
+
+      const env = createEnvelope<EventEnvelope>({ event_id: event.event_id, sent_at: '123' }, [
+        [{ type: 'event' }, event] as EventItem,
+      ]);
+
+      const expectedReturn = {
+        statusCode: 200,
+      } as TransportMakeRequestResponse;
+      NATIVE.enableNative = true;
+      const result = await NATIVE.sendEnvelope(env);
+      expect(result).toMatchObject(expectedReturn);
+    });
+
+    test('has statusCode 500 if failed', async () => {
+      const captureEnvelopeSpy = jest.spyOn(SentryCapacitor, 'captureEnvelope');
+      captureEnvelopeSpy.mockRejectedValue(false);
+
+      const event = {
+        event_id: 'event0',
+        message: 'test',
+        sdk: {
+          name: 'test-sdk-name',
+          version: '2.1.3',
+        },
+      };
+
+      const env = createEnvelope<EventEnvelope>({ event_id: event.event_id, sent_at: '123' }, [
+        [{ type: 'event' }, event] as EventItem,
+      ]);
+
+      const expectedReturn = {
+        statusCode: 500,
+      } as TransportMakeRequestResponse;
+      NATIVE.enableNative = true;
+      const result = await NATIVE.sendEnvelope(env);
+      expect(result).toMatchObject(expectedReturn);
+    })
   });
 
   // TODO add this in when fetchRelease method is in progress

@@ -3,7 +3,7 @@
 # And the CLI then renames it
 
 # node files
-dist/
+# dist/
 node_modules/
 
 # Jest generated folder
@@ -84,3 +84,6 @@ yalc.lock
 android/gradle/wrapper/gradle-wrapper.properties
 example/ionic-angular/android/capacitor.settings.gradle
 example/ionic-angular/android/app/capacitor.build.gradle
+
+#yarn pack files
+sentry-capacitor-v*.tgz
